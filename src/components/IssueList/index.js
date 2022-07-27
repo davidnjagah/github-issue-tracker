@@ -23,6 +23,7 @@ import {
   getFilteredRepoIssues,
   getRepoIssuesLabels,
 } from "../../actions/repository";
+import Issue from "../Issue";
 import { getSearchIssues, setSearch } from "../../actions/search";
 import { setFilterby, setLabel } from "../../actions/main";
 import { Picker } from "@react-native-picker/picker";
@@ -560,9 +561,9 @@ const IssueList = (props) => {
     <View style={styles.container}>
       <FlatList
         data={newData}
-        // renderItem={({ item }) => (
-        //   <Issue issue={item.node} navigation={navigation} />
-        // )}
+        renderItem={({ item }) => (
+          <Issue issue={item.node} navigation={navigation} />
+        )}
         keyExtractor={(item, index) => {
           return item.node.id;
         }}

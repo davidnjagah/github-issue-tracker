@@ -2,6 +2,7 @@ import { createAppContainer } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import IssuePage from "../components/IssuePage";
 import LogIn from "../components/LogIn";
+import IssueDescription from "../components/IssueDescriptionPage";
 
 const screens = {
   LogIn: {
@@ -14,6 +15,12 @@ const screens = {
     screen: IssuePage,
     navigationOptions: {
       title: "Issues Page"
+    }
+  },
+  IssueDescription: {
+    screen: IssueDescription,
+    navigationOptions: {
+      title: "Issues Description Page"
     }
   },
 };
