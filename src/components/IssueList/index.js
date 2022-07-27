@@ -34,6 +34,14 @@ import graphQlClient from "../../graphql/client";
 
 import styles from "./styles";
 
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import * as Permissions from 'expo-permissions';
+
+import { printToFileAsync } from "expo-print";
+import { shareAsync } from "expo-sharing";
+
+
 const IssueList = (props) => {
   const {
     loading,
@@ -133,8 +141,6 @@ const IssueList = (props) => {
 
   var afterUser = null;
 
-  //var createFile = require('create-file');
-
   var onEndReachedCalledDuringMomentum = true;
 
   (function () {
@@ -221,9 +227,37 @@ const IssueList = (props) => {
     }
   };
 
+
+
+ NEW_FILE_PATH = "/storage/emulated/0/github/report"+month+day+min+milli+".txt"
+
+ 
+
+  let generatePdf = async (html) => {
+    const file = await printToFileAsync({
+      html: html,
+      base64: false
+    });
+
+    await shareAsync(file.uri);
+  };
+
+  saveFile = async () => {
+    const { status } = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+    if (status === "granted") {
+        let fileUri = FileSystem.documentDirectory + "text.txt";
+        await FileSystem.writeAsStringAsync(fileUri, "Hello World", { encoding: FileSystem.EncodingType.UTF8 });
+        const asset = await MediaLibrary.createAssetAsync(fileUri)
+        await MediaLibrary.createAlbumAsync("Download", asset, false)
+        console.log("file saved")
+    }
+  }
+
+
   const handleClick = () => {
     //console.log("IssueDescription");
-    var file = "";
+    var fileopen = "";
+    var fileclosed = "";
       graphQlClient
         .query({
           query: UsernameIssues.USERNAME_ISSUES_OPEN,
@@ -238,10 +272,7 @@ const IssueList = (props) => {
             alert("No Issues Available");
           }        
           else{ 
-            //console.log("Total Number of Issues");
-            //console.log("Open Issues are: ",user.issues.totalCount);
-            file += "Total Number of Issues \n";
-            file += "Open Issues are: " + user.issues.totalCount + "\n";
+            fileopen += "Open Issues are: " + user.issues.totalCount;
           }
         })
         .catch((error) => {
@@ -265,9 +296,7 @@ const IssueList = (props) => {
             alert("No Issues Available");
           }        
           else{ 
-            //console.log("Closed Issues are: ",user.issues.totalCount);
-            file += "Closed Issues are: "+ user.issues.totalCount;
-            //console.log("Closed Issues are: ",user.issues.totalCount);
+            fileclosed += "Closed Issues are: "+ user.issues.totalCount;
           }
         })
         .catch((error) => {
@@ -275,10 +304,19 @@ const IssueList = (props) => {
           alert("Input the Correct Names of the Username and/or Repository", undefined, 2);      
         })
         .finally(() => {
-          console.log(file);
-          createFile('/storage/emulated/0/github/report'+month+day+min+milli, 'file', function (err) {
-            // file either already exists or is now created (including non existing directories)
-          });
+          // write the file
+          const html = `
+          <html>
+            <body>
+              <h1 style= "font-size:50";> GitHub Issue Tracker Report</h1>
+              <h2 style= "font-size:30";> Total Number of Issues </h2>
+              <p style="font-size:20;">${fileopen}</p>
+              <p style="font-size:20;">${fileclosed}</p>
+            </body>
+          </html>
+        `;
+
+          generatePdf(html);
         });
         
   };
